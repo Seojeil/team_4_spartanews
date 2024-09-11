@@ -5,12 +5,12 @@
  - 
 ## API specification
 ### /api/accounts
- - GET: 기사 전체를 조회할 수 있습니다.
- - POST: (로그인한 사용자는) 기사를 작성할 수 있습니다.
+ - GET: 
+ - POST: 
 
 ### /api/articles
- - GET:
- - POST: 
+ - GET: 기사 전체를 조회할 수 있습니다.
+ - POST: (로그인한 사용자는) 기사를 작성할 수 있습니다.
 
 ## Troubleshooting
  - 문제상황
