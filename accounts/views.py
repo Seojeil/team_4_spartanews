@@ -25,7 +25,7 @@ class SignupView(APIView):
     # 회원 비활성화
     def delete(self, request):
         user = request.user
-        
+        ## 유효성 검사해야됨
         user.delete()
         return Response({"message":"회원탈퇴성공"})
         
