@@ -6,7 +6,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=50, unique=True)
     nickname = models.CharField(max_length=50, null=True, blank=True)
     birth = models.DateField()
-    gender = models.CharField(choices=gender, max_length=1, null=True, blank=True)
+    gender = models.CharField(choices=gender, max_length=1, other='O')
     bio = models.TextField(null=True, blank=True)
     
 
