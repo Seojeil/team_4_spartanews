@@ -5,16 +5,19 @@
  - 
 ## API specification
 ### /api/accounts
- - GET: 기사 전체를 조회할 수 있습니다.
- - POST: (로그인한 사용자는) 기사를 작성할 수 있습니다.
+ - GET:
+ - POST: 회원가입을 할 수 있습니다. 
 
 ### /api/accounts/<int:account_id>/
  - GET: 유저의 프로필 페이지의 정보를 조회 할 수 있습니다.
  - DELETE : 해당 유저의 비활성화를 진행 합니다.
 
 ### /api/articles
- - GET:
- - POST: 
+ - GET: 기사 전체를 조회할 수 있습니다.
+ - POST: (로그인한 사용자는) 기사를 작성할 수 있습니다.
+
+### /api/articles/`<int:article_pk>`/`
+ - GET: 특정 기사를 조회할 수 있습니다.
 
 ## Troubleshooting
  - 장고패키지가 제대로 로드가 안되는것을 확인
