@@ -10,6 +10,7 @@
 
 ### /api/accounts/<int:account_id>/
  - GET: 유저의 프로필 페이지의 정보를 조회 할 수 있습니다.
+ - DELETE : 해당 유저의 비활성화를 진행 합니다.
 
 ### /api/articles
  - GET:
