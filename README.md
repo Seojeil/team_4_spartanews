@@ -11,6 +11,7 @@
 
 ### /api/accounts/`<int:account_id>`/
  - GET: 유저의 프로필 페이지의 정보를 조회 할 수 있습니다.
+ - PUT: 유저의 프로필을 수정합니다.
 
 ### /api/accounts/login/
  - POST: 사용자의 유저 인증을 하여 로그인을 진행합니다.
