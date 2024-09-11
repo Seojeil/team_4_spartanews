@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from .models import Article
 from .serializers import (
     ArticleSerializer,
@@ -24,8 +25,8 @@ class ArticleAPIView(APIView):
         
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class ArticleDetailAPIView(APIView):
     # 기사 상세페이지 (로그인 필요 X)
@@ -36,3 +37,13 @@ class ArticleDetailAPIView(APIView):
         
         serializer = ArticleDetailSerializer(article)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # 기사 수정 (로그인 기능 이후에 검증로직 푸가 예정)
+    def put(self, request, article_pk):
+        article = get_object_or_404(Article, pk=article_pk)
+        
+        serializer = ArticleDetailSerializer(article, data=request.data, partial=True)
+        
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(updated_at=timezone.now())
+            return Response(serializer.data, status=status.HTTP_200_OK)
