@@ -2,15 +2,20 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from .models import User
-from .serializers import UserProfileSerializers
+from .serializers import UserProfileSerializers, UserUpdateSerializers
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from .validators import validate_signup
 
 
 class SignupView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+    
     # 회원가입
     def post(self, request):
         is_valid, err_msg = validate_signup(request.data)
@@ -25,20 +30,38 @@ class SignupView(APIView):
     # 회원 비활성화
     def delete(self, request):
         user = request.user
-        ## 유효성 검사해야됨
-        user.delete()
-        return Response({"message":"회원탈퇴성공"})
+        password = request.data.get("password")
+        if user.check_password(password):    
+            user.delete()
+            return Response({"message":"회원 비활성화"})
+        else:
+            return Response({"message":"비밀번호가 일치하지않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+
         
 
 
 class UserProfileView(APIView):
     # 프로필 조회
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, account_id):
+        if user.id != account_id: 
+            return Response({"message": "프로필을 볼 권한이 없습니다"}, status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, pk=account_id)
         serializer = UserProfileSerializers(user)
-
-        return Response(serializer.data)
+        return Response(serializer.data)    
+    
+    # 프로필 수정
+    def put(self, request, account_id):
+        ## 1. 특정 회원정보
+        user = request.user
+        if user.id != account_id:
+            return Response({"message":"회원 정보와 일치하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        serializers = UserUpdateSerializers(instance=user, data=request.data, partial=True)
+        if serializers.is_valid(raise_exception=True):
+            serializers.save()
+            return Response(serializers.data)
+        
 
 
 class UserLoginView(APIView):
