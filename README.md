@@ -6,7 +6,7 @@
 ## API specification
 ### /api/accounts
  - GET:
- - POST: 
+ - POST: 회원가입을 할 수 있습니다. 
 
 ### /api/articles
  - GET:
