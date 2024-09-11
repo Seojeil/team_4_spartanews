@@ -6,7 +6,8 @@
 ## API specification
 ### /api/accounts
  - GET:
- - POST: 회원가입을 할 수 있습니다. 
+ - POST: 회원가입을 할 수 있습니다.
+ - DELTE 
 
 ### /api/accounts/`<int:account_id>`/
  - GET: 유저의 프로필 페이지의 정보를 조회 할 수 있습니다.
