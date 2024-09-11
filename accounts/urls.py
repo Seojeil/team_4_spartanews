@@ -3,4 +3,5 @@ from accounts import views
 
 
 urlpatterns = [
+    path('',views.SignupView.as_view()),
 ]
