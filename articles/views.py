@@ -29,7 +29,10 @@ class ArticleAPIView(APIView):
 
 class ArticleDetailAPIView(APIView):
     # 기사 상세페이지 (로그인 필요 X)
-    def get(self, request, pk):
-        article = get_object_or_404(Article, pk=pk)
+    def get(self, request, article_pk):
+        article = get_object_or_404(Article, pk=article_pk)
+        article.hits += 1
+        article.save()
+        
         serializer = ArticleDetailSerializer(article)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -16,7 +16,7 @@ class Article(models.Model):
     # non_recommendation = models.models.ManyToManyField()
     hits = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return self.title
