@@ -44,8 +44,7 @@ class UserChangePasswordSerailizers(serializers.Serializer):
         if attrs["password_1"] != attrs["password_2"]:
             raise serializers.ValidationError(
                 {"error": "비밀번호1과 비밀번호2가 일치하지 않습니다"})
-        if attrs["prev_password"] == attrs["password_1"]:
-            raise serializers.ValidationError({"error": "기존의 비밀번호와 일치합니다."})
+
 
         return attrs
 

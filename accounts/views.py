@@ -64,6 +64,8 @@ class UserChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
     def put(self, request):
         ## 비밀번호 변경
+        if request.data.get("prev_password") == request.data.get("password_1"):
+            return Response({"message":"기존의 비밀번호와 일치합니다."}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserChangePasswordSerailizers(instance=request.user, data = request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
