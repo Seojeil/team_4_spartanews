@@ -21,7 +21,8 @@ class User(AbstractUser):
     def delete(self, using=None, keep_parents=False):
         self.is_active = False
         self.save(using=using)
-
+        
+    # 슈퍼유저 만들때 User 오버라이드
     @classmethod
     def create_superuser(cls, username, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
