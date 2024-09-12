@@ -106,7 +106,7 @@ class CommentListView(APIView):
     
     permission_classes = [IsAuthenticated]
     
-    ## 댓글 작성
+    # 댓글 작성
     def post(self, request, article_pk):
         article = self.get_object(article_pk)
         serializer = CommentSerializer(data=request.data)
@@ -115,7 +115,7 @@ class CommentListView(APIView):
             
             return Response({"message":"댓글 작성 완료"})
         
-    ## 해당 article의 모든 댓글 조회
+    # 해당 article의 모든 댓글 조회
     def get(self, request, article_pk):
         article = self.get_object(article_pk)
         comments = article.article_comments.all().order_by("-pk")
@@ -127,7 +127,7 @@ class CommentDetailView(APIView):
     def get_object(self, pk):
         return get_object_or_404(Comments, pk=pk)
     
-    ## 기사 삭제 기능
+    # 기사 삭제 기능
     def delete(self, request, comment_pk):
         comment = self.get_object(comment_pk)
         if comment.author != request.user:
@@ -135,7 +135,7 @@ class CommentDetailView(APIView):
         comment.delete()
         return Response({"message":"댓글을 성공적으로 삭제했습니다"})
     
-    ## 댓글 수정
+    # 댓글 수정
     def put(self, request, comment_pk):
         comment = self.get_object(comment_pk)
         serializer = CommentSerializer(instance = comment, data = request.data)

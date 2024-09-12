@@ -27,7 +27,7 @@
  - GET: 기사 전체를 조회할 수 있습니다.
  - POST: 로그인한 사용자는 기사를 작성할 수 있습니다.
 
-### /api/articles/`<int:article_pk>`/comments/
+### /api/articles/`<int:article_pk>`/
  - GET: 특정 기사를 조회할 수 있습니다.
  - POST: 로그인한 사용자는 기사를 추천/비추천 할 수 있습니다.
  - PUT: 기사의 작성자는 기사를 수정할 수 있습니다.
