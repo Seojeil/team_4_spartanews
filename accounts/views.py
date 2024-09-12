@@ -28,3 +28,14 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializers(user)
 
         return Response(serializer.data)
+
+
+# class LogoutAPIView(APIView):
+#     # 로그아웃
+#     # permission_classes = [IsAuthenticated]
+#     def post(self, request):
+#         try:
+#             refresh_token = request.data["refresh_token"]
+#             token = RefreshToken(refresh_token)
+#             token.blacklist()
+#             return Response({"detail"})
