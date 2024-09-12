@@ -13,11 +13,15 @@
  - POST: 로그인한 사용자는 다른 사용자를 팔로우할 수 있습니다.
  - PUT: 유저의 프로필을 수정합니다.
 
+### /spi/accounts/password/
+- PUT: 유저 본인의 비밀번호를 수정할 수 있습니다. 
+
 ### /api/accounts/login/
  - POST: 사용자의 유저 인증을 하여 로그인을 진행합니다.
 
 ### /api/accounts/logout/
- - POST: 유저 인증된 사용자를 로그아웃합니다.
+ - POST: 유저 인증된 사용자를 로그아웃합니다
+
 
 ### /api/articles
  - GET: 기사 전체를 조회할 수 있습니다.
@@ -28,6 +32,15 @@
  - POST: 로그인한 사용자는 기사를 추천/비추천 할 수 있습니다.
  - PUT: 기사의 작성자는 기사를 수정할 수 있습니다.
  - DELETE: 기사의 작성자는 기사를 삭제할 수 있습니다.
+
+ ### /api/articles/`<int:article_pk>`/comments/
+ - GET: 특정 기사의 대한 댓글들을 조회할 수 있습니다.
+ - POST: 특정 기사의 댓글을 작성할 수 있습니다.
+
+ ### /api/articles/comments/`<int:comment_pk>`/
+ - PUT: 본인이 올린 댓글을 수정할 수 있습니다.
+ - POST: 로그인한 유저는 특정 댓글을 추천 또는 비추천 할 수 있습니다.
+ - DELETE: 본인이 올린 댓글을 삭제할 수 있습니다. 
 
 ## Troubleshooting
  - 장고패키지가 제대로 로드가 안되는것을 확인
