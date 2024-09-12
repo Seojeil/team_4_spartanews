@@ -16,6 +16,9 @@
 ### /api/accounts/login/
  - POST: 사용자의 유저 인증을 하여 로그인을 진행합니다.
 
+### /api/accounts/logout/
+ - POST: 유저 인증된 사용자를 로그아웃합니다.
+
 ### /api/articles
  - GET: 기사 전체를 조회할 수 있습니다.
  - POST: 로그인한 사용자는 기사를 작성할 수 있습니다.
