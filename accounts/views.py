@@ -6,6 +6,7 @@ from .serializers import UserProfileSerializers, UserUpdateSerializers, UserChan
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import status
 from .validators import validate_signup
 
@@ -94,12 +95,17 @@ class UserLoginView(APIView):
             return Response({"message": "아이디 또는 비밀번호가 일치하지않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class LogoutAPIView(APIView):
-#     # 로그아웃
-#     # permission_classes = [IsAuthenticated]
-#     def post(self, request):
-#         try:
-#             refresh_token = request.data["refresh_token"]
-#             token = RefreshToken(refresh_token)
-#             token.blacklist()
-#             return Response({"detail"})
+class LogoutView(APIView):
+    #회원 로그아웃
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response({"detail": "로그아웃되었습니다."}, status=status.HTTP_200_OK)
+
+        except TokenError:
+            return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
