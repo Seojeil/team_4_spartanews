@@ -54,6 +54,5 @@ class ArticleDetailAPIView(APIView):
     # 기사 삭제 (로그인 기능 이후에 검증로직 추가 예정)
     def delete(self, request, article_pk):
         article = self.get_object(article_pk)
-        
         article.delete()
         return Response({"detail": "게시글이 삭제되었습니다.."}, status=status.HTTP_204_NO_CONTENT)
