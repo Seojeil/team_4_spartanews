@@ -5,16 +5,20 @@ from .models import Article, Comments
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
-        fields = ['title','content','image']
+        fields = "__all__"
         read_only_fields = ("author", "recommendation", "non_recommendation")
         
 
-class ArticleDetailSerializer(ArticleSerializer):
-    pass
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
     class Meta:
         model = Comments
-        fields = ["content"]
+        fields = "__all__"
         read_only_fields = ("author", "recommendation", "non_recommendation","article",)
+        
+        
+class ArticleDetailSerializer(ArticleSerializer):
+    article_comments = CommentSerializer(many=True, read_only=True)
+    

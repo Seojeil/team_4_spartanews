@@ -21,3 +21,13 @@ class User(AbstractUser):
     def delete(self, using=None, keep_parents=False):
         self.is_active = False
         self.save(using=using)
+
+    @classmethod
+    def create_superuser(cls, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        # 생일 삭제
+        extra_fields.pop('birth', None)
+
+        return cls._create_user(username, email, password, **extra_fields)
