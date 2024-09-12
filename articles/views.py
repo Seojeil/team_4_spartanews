@@ -9,7 +9,8 @@ from django.utils import timezone
 from .models import Article
 from .serializers import (
     ArticleSerializer,
-    ArticleDetailSerializer
+    ArticleDetailSerializer,
+    CommentSerializer
     )
 
 
@@ -93,3 +94,18 @@ class ArticleDetailAPIView(APIView):
         
         article.delete()
         return Response({"detail": "게시글이 삭제되었습니다.."}, status=status.HTTP_204_NO_CONTENT)
+    
+
+
+class CommentListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, article_pk):
+        article = get_object_or_404(Article, pk=article_pk)
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(author=request.user, article = article)
+            
+            
+            
+            return Response({"message":"댓글 작성 완료"})
+        
