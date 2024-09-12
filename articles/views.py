@@ -46,6 +46,31 @@ class ArticleDetailAPIView(APIView):
         serializer = ArticleDetailSerializer(article)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    # 기사 추천, 비추천
+    def post(self, request, article_pk):
+        article = self.get_object(article_pk)
+        
+        # 추천
+        if request.data.get('evaluate') == 'recommendation':
+            article.non_recommendation.remove(request.user)
+            if article.recommendation.filter(pk=request.user.pk).exists():
+                article.recommendation.remove(request.user)
+                return Response({"detail": "추천이 취소되었습니다."}, status=status.HTTP_200_OK)
+            else:
+                article.recommendation.add(request.user)
+                article.save()
+                return Response({"detail": "이 기사를 추천합니다."}, status=status.HTTP_200_OK)
+        # 비추천
+        else:
+            article.recommendation.remove(request.user)
+            if article.non_recommendation.filter(pk=request.user.pk).exists():
+                article.non_recommendation.remove(request.user)
+                return Response({"detail": "비추천이 취소되었습니다."}, status=status.HTTP_200_OK)
+            else:
+                article.non_recommendation.add(request.user)
+                article.save()
+                return Response({"detail": "이 기사를 비추천합니다."}, status=status.HTTP_200_OK)
+    
     # 기사 수정
     def put(self, request, article_pk):
         article = self.get_object(article_pk)
