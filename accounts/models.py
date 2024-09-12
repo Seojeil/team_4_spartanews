@@ -10,3 +10,7 @@ class User(AbstractUser):
     birth = models.DateField()
     gender = models.CharField(choices=gender, max_length=1, default='O')
     bio = models.TextField(null=True, blank=True)
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_active = False
+        self.save(using=using)
