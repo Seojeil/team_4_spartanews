@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import status
 from .validators import validate_signup
 from .models import User
@@ -19,7 +20,7 @@ class SignupView(APIView):
         if self.request.method == 'POST':
             return [AllowAny()]
         return [IsAuthenticated()]
-    
+
     # 회원가입
     def post(self, request):
         is_valid, err_msg = validate_signup(request.data)
@@ -35,47 +36,47 @@ class SignupView(APIView):
     def delete(self, request):
         user = request.user
         password = request.data.get("password")
-        if user.check_password(password):    
+        if user.check_password(password):
             user.delete()
-            return Response({"message":"회원 비활성화"})
+            return Response({"message": "회원 비활성화"})
         else:
-            return Response({"message":"비밀번호가 일치하지않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
-        
-
-        
+            return Response({"message": "비밀번호가 일치하지않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserProfileView(APIView):
     # 프로필 조회
     permission_classes = [IsAuthenticated]
+
     def get(self, request, account_id):
         user = get_object_or_404(User, pk=account_id)
         serializer = UserProfileSerializers(user)
-        return Response(serializer.data)    
-    
+        return Response(serializer.data)
+
     # 프로필 수정
     def put(self, request, account_id):
-        ## 1. 특정 회원정보
+        # 1. 특정 회원정보
         user = request.user
         if user.id != account_id:
-            return Response({"message":"회원 정보와 일치하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
-        serializers = UserUpdateSerializers(instance=user, data=request.data, partial=True)
+            return Response({"message": "회원 정보와 일치하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        serializers = UserUpdateSerializers(
+            instance=user, data=request.data, partial=True)
         if serializers.is_valid(raise_exception=True):
             serializers.save()
             return Response(serializers.data)
-        
+
+
 class UserChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
+
     def put(self, request):
-        ## 비밀번호 변경
+        # 비밀번호 변경
         if request.data.get("prev_password") == request.data.get("password_1"):
-            return Response({"message":"기존의 비밀번호와 일치합니다."}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = UserChangePasswordSerailizers(instance=request.user, data = request.data)
+            return Response({"message": "기존의 비밀번호와 일치합니다."}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = UserChangePasswordSerailizers(
+            instance=request.user, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response({"Message": "비밀번호변경완료"})
-        
-        
 
 
 class UserLoginView(APIView):
@@ -96,3 +97,19 @@ class UserLoginView(APIView):
             return Response(allowed_id)
         else:
             return Response({"message": "아이디 또는 비밀번호가 일치하지않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(APIView):
+    #회원 로그아웃
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response({"detail": "로그아웃되었습니다."}, status=status.HTTP_200_OK)
+
+        except TokenError:
+            return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
