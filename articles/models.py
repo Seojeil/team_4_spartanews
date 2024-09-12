@@ -6,7 +6,11 @@ from django.contrib.auth import get_user_model
 class Article(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
-    # author = models.ForeignKey()
+    author = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='articles'
+        )
     image = models.ImageField(
         upload_to='images/',
         blank=True,
