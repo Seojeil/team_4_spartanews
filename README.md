@@ -5,12 +5,12 @@
  - 
 ## API specification
 ### /api/accounts
- - GET:
  - POST: 회원가입을 할 수 있습니다.
  - DELETE : 해당 유저의 비활성화를 진행 합니다.
 
 ### /api/accounts/`<int:account_id>`/
  - GET: 유저의 프로필 페이지의 정보를 조회 할 수 있습니다.
+ - POST: 로그인한 사용자는 다른 사용자를 팔로우할 수 있습니다.
  - PUT: 유저의 프로필을 수정합니다.
 
 ### /api/accounts/login/
@@ -20,10 +20,11 @@
  - GET: 기사 전체를 조회할 수 있습니다.
  - POST: 로그인한 사용자는 기사를 작성할 수 있습니다.
 
-### /api/articles/`<int:article_pk>`/`
+### /api/articles/`<int:article_pk>`/
  - GET: 특정 기사를 조회할 수 있습니다.
- - PUT: 기사의 작성자는 기사를 수정할 수 있습니다. // 본인확인 로직은 현재 없는 상태입니다.
- - DELETE: 기사의 작성자는 기사를 삭제할 수 있습니다. // 본인확인 로직은 현재 없는 상태입니다.
+ - POST: 로그인한 사용자는 기사를 추천/비추천 할 수 있습니다.
+ - PUT: 기사의 작성자는 기사를 수정할 수 있습니다.
+ - DELETE: 기사의 작성자는 기사를 삭제할 수 있습니다.
 
 ## Troubleshooting
  - 장고패키지가 제대로 로드가 안되는것을 확인
