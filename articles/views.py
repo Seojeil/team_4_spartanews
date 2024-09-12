@@ -6,7 +6,7 @@ from rest_framework.decorators import permission_classes
 from django.utils.decorators import method_decorator
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from .models import Article
+from .models import Article, Category
 from .serializers import (
     ArticleSerializer,
     ArticleDetailSerializer
@@ -24,10 +24,13 @@ class ArticleAPIView(APIView):
     # 기사 작성
     @method_decorator(permission_classes([IsAuthenticated]))
     def post(self, request):
+        category_id = request.data.get('category')
+        category = get_object_or_404(Category, id=category_id)
+        
         serializer = ArticleSerializer(data=request.data)
         
         if serializer.is_valid(raise_exception=True):
-            serializer.save(author=request.user)
+            serializer.save(author=request.user, category=category)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
