@@ -10,6 +10,7 @@
 
 ### /api/accounts/`<int:account_id>`/
  - GET: 유저의 프로필 페이지의 정보를 조회 할 수 있습니다.
+ - POST: 로그인한 사용자는 다른 사용자를 팔로우할 수 있습니다.
  - PUT: 유저의 프로필을 수정합니다.
 
 ### /api/accounts/login/
