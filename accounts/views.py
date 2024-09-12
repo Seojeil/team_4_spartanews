@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from .models import User
-from .serializers import UserProfileSerializers, UserUpdateSerializers
+from .serializers import UserProfileSerializers, UserUpdateSerializers, UserChangePasswordSerailizers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -45,8 +45,6 @@ class UserProfileView(APIView):
     # 프로필 조회
     permission_classes = [IsAuthenticated]
     def get(self, request, account_id):
-        if user.id != account_id: 
-            return Response({"message": "프로필을 볼 권한이 없습니다"}, status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, pk=account_id)
         serializer = UserProfileSerializers(user)
         return Response(serializer.data)    
@@ -61,6 +59,16 @@ class UserProfileView(APIView):
         if serializers.is_valid(raise_exception=True):
             serializers.save()
             return Response(serializers.data)
+        
+class UserChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    def put(self, request):
+        ## 비밀번호 변경
+        serializer = UserChangePasswordSerailizers(instance=request.user, data = request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({"Message": "비밀번호변경완료"})
+        
         
 
 
