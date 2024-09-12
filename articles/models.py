@@ -16,8 +16,14 @@ class Article(models.Model):
         blank=True,
         )
     # comments = models.ForeignKey()
-    # recommendation = models.models.ManyToManyField()
-    # non_recommendation = models.models.ManyToManyField()
+    recommendation = models.ManyToManyField(
+        get_user_model(),
+        related_name='recommend_articles',
+    )
+    non_recommendation = models.ManyToManyField(
+        get_user_model(),
+        related_name='non_recommend_articles',
+    )
     hits = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
