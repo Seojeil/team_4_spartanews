@@ -21,10 +21,9 @@ from django.db.models.functions import Coalesce
 class ArticleAPIView(APIView):
     # 모든 기사 조회
     def get(self, request):
-        data_type = request.query_params.get("data_type", "")  # articles/comments
-        
+        data_type = request.query_params.get("data_type", "")  # articles/comments 
         sort_type = request.query_params.get("sort_type", "")  # recommendation/latest_date/hits(articles일때만)
-        print(data_type)
+
 
         # 댓글조회/정렬
         if data_type == 'comments':
