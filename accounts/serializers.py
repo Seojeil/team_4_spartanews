@@ -45,7 +45,6 @@ class UserChangePasswordSerailizers(serializers.Serializer):
             raise serializers.ValidationError(
                 {"error": "비밀번호1과 비밀번호2가 일치하지 않습니다"})
 
-
         return attrs
 
     def update(self, instance, validated_data):
