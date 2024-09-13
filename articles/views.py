@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.db.models import Count
+from django.db.models import Count, F, Max, Min
 from django.shortcuts import get_object_or_404
 from .models import Article, Category, Comment
 from .serializers import (
@@ -14,64 +14,46 @@ from .serializers import (
     CommentSerializer
 )
 from .paginations import CustomCursorPagination
-from django.db.models import F, Max
+
 from django.db.models.functions import Coalesce
 
 
 class ArticleAPIView(APIView):
     # 모든 기사 조회
-    def get(self, request):
+    def get(self, request,):
         data_type = request.query_params.get("data_type", "")  # articles/comments 
         sort_type = request.query_params.get("sort_type", "")  # recommendation/latest_date/hits(articles일때만)
-
-
-        # 댓글조회/정렬
+        title = request.query_params.get('title', "").strip()
+        content = request.query_params.get('context', "").strip()
+        category = request.query_params.get('category', "").strip()
+        author = request.query_params.get('author', "").strip()
+        
+        paginator = CustomCursorPagination()
+        
         if data_type == 'comments':
-            comments = Comment.objects.annotate(
-                latest_date=Max(
-                    Coalesce(F('updated_at'), F('created_at')),
-                    F('created_at')
-                )
+            queryset = Comment.objects.annotate(
+                latest_date=Max(F('updated_at'), F('created_at')),
+                recommendation_count=Count('recommendation') - Count('non_recommendation')
             )
-            # 추천순 정렬
-            if sort_type == 'recommendation':
-                comments = comments.annotate(
-                    recommendation_count=Count(
-                        'recommendation') - Count('non_recommendation')
-                ).order_by('-recommendation_count', '-latest_date')
-            # 최신순 정렬
-            else:
-                comments = comments.order_by('-latest_date')
-
-            paginator = CustomCursorPagination()
-            page = paginator.paginate_queryset(comments, request)
-            serializer = CommentSerializer(page, many=True)
-
-        # 기사조회/정렬
+            serializer_class = CommentSerializer
         else:
-            articles = Article.objects.annotate(
-                latest_date=Max(
-                    Coalesce(F('updated_at'), F('created_at')),
-                    F('created_at')
-                )
+            queryset = Article.objects.annotate(
+                latest_date=Max(F('updated_at'), F('created_at')),
+                recommendation_count=Count('recommendation') - Count('non_recommendation')
             )
-            # 추천순 정렬
-            if sort_type == 'recommendation':
-                articles = articles.annotate(
-                    recommendation_count=Count(
-                        'recommendation') - Count('non_recommendation')
-                ).order_by('-recommendation_count', '-latest_date')
-            # 조회수순 정렬
-            elif sort_type == 'hits':
-                articles = articles.order_by('-hits', '-latest_date')
-            # 최신순 정렬
-            else:
-                articles = articles.order_by('-latest_date')
+            if title:
+                queryset = queryset.filter(title__icontains=title)
+            elif content:
+                queryset = queryset.filter(content__icontains=content)
+            elif category:
+                queryset = queryset.filter(category__name__icontains=category)
+            elif author:
+                queryset = queryset.filter(author__username__icontains=author)
+            
+            serializer_class = ArticleSerializer
 
-            paginator = CustomCursorPagination()
-            page = paginator.paginate_queryset(articles, request)
-            serializer = ArticleSerializer(page, many=True)
-
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = serializer_class(page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     # 기사 작성
