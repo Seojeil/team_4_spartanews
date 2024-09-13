@@ -16,12 +16,17 @@ from .serializers import (
 
 class ArticleAPIView(APIView):
     # 모든 기사 조회
-    def get(self, request):
-        articles = Article.objects.all()
+    # def get(self, request):
+    #     search_query = request.GET.get('search', '')
+    #     if search_query:
+    #         articles = Article.objects.filter(Q(title__icontains=search_query))
+    #     else:
+    #         articles = Article.objects.all()
         
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-        
+    #     serializer = ArticleSerializer(articles, many=True)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
     # 기사 작성
     @method_decorator(permission_classes([IsAuthenticated]))
     def post(self, request):
