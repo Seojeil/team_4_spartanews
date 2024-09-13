@@ -4,17 +4,49 @@
  - 
  - 
 ## API specification
-### /api/accounts
- - GET:
- - POST: 
+### api/accounts/
+ - POST: 회원가입을 할 수 있습니다.
+ - DELETE : 해당 유저의 비활성화를 진행 합니다.
 
-### /api/articles
- - GET:
- - POST: 
+### api/accounts/`<int:account_id>`/
+ - GET: 유저의 프로필 페이지의 정보를 조회 할 수 있습니다.
+ - POST: 로그인한 사용자는 다른 사용자를 팔로우할 수 있습니다.
+ - PUT: 유저의 프로필을 수정합니다.
+
+### api/accounts/password/
+- PUT: 유저 본인의 비밀번호를 수정할 수 있습니다. 
+
+### api/accounts/login/
+ - POST: 사용자의 유저 인증을 하여 로그인을 진행합니다.
+
+### api/accounts/logout/
+ - POST: 유저 인증된 사용자를 로그아웃합니다
+
+### api/articles
+ - GET: 기사 전체를 조회할 수 있습니다.
+ - POST: 로그인한 사용자는 기사를 작성할 수 있습니다.
+
+### api/articles/`<int:article_pk>`/
+ - GET: 특정 기사를 조회할 수 있습니다.
+ - POST: 로그인한 사용자는 기사를 추천/비추천 할 수 있습니다.
+ - PUT: 기사의 작성자는 기사를 수정할 수 있습니다.
+ - DELETE: 기사의 작성자는 기사를 삭제할 수 있습니다.
+
+ ### api/articles/`<int:article_pk>`/comments/
+ - POST: 특정 기사의 댓글을 작성할 수 있습니다.
+
+ ### api/articles/comments/`<int:comment_pk>`/
+ - POST: 로그인한 유저는 특정 댓글을 추천 또는 비추천 할 수 있습니다.
+ - PUT: 본인이 올린 댓글을 수정할 수 있습니다.
+ - DELETE: 본인이 올린 댓글을 삭제할 수 있습니다. 
 
 ## Troubleshooting
- - 문제상황
-    - 해결방안
+ - 장고패키지가 제대로 로드가 안되는것을 확인
+    - git clone 및 기본 세팅을 진행한 후 파이썬 코드를 확인하던중 장고 패키지가 제대로 import되지 않는것을 인지
+    - 원인 파악을 위해서 git clone 및 기본 세팅을 재반복함
+    - 문제가 해결이 되지않아 디렉토리를 확인
+    - settings.py에 Django Secret_key가 다른 config.py에서 import된 것을 확인
+    - config.py를 새로 생성해주고 새로운 시크릿 키를 생성하여 settings.py에 전달 후 해결 
 
 ## Version
 annotated-types==0.7.0  
