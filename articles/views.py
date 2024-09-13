@@ -20,11 +20,14 @@ from django.db.models.functions import Coalesce
 
 class ArticleAPIView(APIView):
     # 모든 기사 조회
-    def get(self, request):
+    def get(self, request,):
         data_type = request.query_params.get("data_type", "")  # articles/comments 
         sort_type = request.query_params.get("sort_type", "")  # recommendation/latest_date/hits(articles일때만)
-
-
+        title = request.query_params.get('title', "")
+        context = request.query_params.get('context', "")
+        category = request.query_params.get('category', "")
+        author = request.query_params.get('author', "")
+        
         # 댓글조회/정렬
         if data_type == 'comments':
             comments = Comment.objects.annotate(
@@ -47,7 +50,7 @@ class ArticleAPIView(APIView):
             page = paginator.paginate_queryset(comments, request)
             serializer = CommentSerializer(page, many=True)
 
-        # 기사조회/정렬
+        # 기사 조회/정렬/검색
         else:
             articles = Article.objects.annotate(
                 latest_date=Max(
@@ -55,8 +58,22 @@ class ArticleAPIView(APIView):
                     F('created_at')
                 )
             )
+            
+            # 아티클 검색
+            if title:
+                articles = articles.filter(title__icontains=title)
+                
+            elif context:
+                articles = articles.filter(context__icontains=context)
+
+            elif category:
+                articles = articles.filter(category__name__icontains=category)
+                
+            elif author:
+                articles = articles.filter(author__username__icontains=author)
+
             # 추천순 정렬
-            if sort_type == 'recommendation':
+            elif sort_type == 'recommendation':
                 articles = articles.annotate(
                     recommendation_count=Count(
                         'recommendation') - Count('non_recommendation')
