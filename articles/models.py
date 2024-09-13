@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class Recommendable(models.Model):
+class CommonField(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -26,7 +26,7 @@ class Recommendable(models.Model):
         abstract = True
 
 
-class Article(Recommendable):
+class Article(CommonField):
     title = models.CharField(max_length=200)
     image = models.ImageField(
         upload_to='images/',
@@ -55,7 +55,7 @@ class Category(models.Model):
         return self.name
 
 
-class Comment(Recommendable):
+class Comment(CommonField):
     article = models.ForeignKey(
         to=Article, 
         on_delete=models.CASCADE, 
