@@ -25,6 +25,7 @@ class Recommendable(models.Model):
     class Meta:
         abstract = True
 
+
 class Article(Recommendable):
     title = models.CharField(max_length=200)
     image = models.ImageField(
@@ -40,6 +41,7 @@ class Article(Recommendable):
 
     def __str__(self):
         return self.title
+
 
 # 카테고리
 class Category(models.Model):
