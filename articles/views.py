@@ -12,51 +12,77 @@ from .serializers import (
     ArticleSerializer,
     ArticleDetailSerializer,
     CommentSerializer
-    )
+)
+from .paginations import CustomCursorPagination
+from django.db.models import F, Max
+from django.db.models.functions import Coalesce
 
 
 class ArticleAPIView(APIView):
     # 모든 기사 조회
     def get(self, request):
-        data_type = request.data.get("data_type") # articles/comments
-        sort_type = request.data.get("sort_type") # recommendation/created_at/hits(articles일때만)
-        
+        data_type = request.query_params.get("data_type", "")  # articles/comments 
+        sort_type = request.query_params.get("sort_type", "")  # recommendation/latest_date/hits(articles일때만)
+
+
         # 댓글조회/정렬
         if data_type == 'comments':
+            comments = Comment.objects.annotate(
+                latest_date=Max(
+                    Coalesce(F('updated_at'), F('created_at')),
+                    F('created_at')
+                )
+            )
             # 추천순 정렬
             if sort_type == 'recommendation':
-                comments = Comment.objects.annotate(
-                    recommendation_count=Count('recommendation')-Count('non_recommendation')
-                    ).order_by('-recommendation_count', '-created_at')
-            # 작성순 정렬
+                comments = comments.annotate(
+                    recommendation_count=Count(
+                        'recommendation') - Count('non_recommendation')
+                ).order_by('-recommendation_count', '-latest_date')
+            # 최신순 정렬
             else:
-                comments = Comment.objects.all().order_by('-created_at')
-            serializer = CommentSerializer(comments, many=True)
+                comments = comments.order_by('-latest_date')
+
+            paginator = CustomCursorPagination()
+            page = paginator.paginate_queryset(comments, request)
+            serializer = CommentSerializer(page, many=True)
+
         # 기사조회/정렬
         else:
+            articles = Article.objects.annotate(
+                latest_date=Max(
+                    Coalesce(F('updated_at'), F('created_at')),
+                    F('created_at')
+                )
+            )
             # 추천순 정렬
             if sort_type == 'recommendation':
-                articles = Article.objects.annotate(
-                    recommendation_count=Count('recommendation')-Count('non_recommendation')
-                    ).order_by('-recommendation_count', '-created_at')
+                articles = articles.annotate(
+                    recommendation_count=Count(
+                        'recommendation') - Count('non_recommendation')
+                ).order_by('-recommendation_count', '-latest_date')
             # 조회수순 정렬
             elif sort_type == 'hits':
-                articles = Article.objects.all().order_by('-hits', '-created_at')
-            #작성순 정렬
+                articles = articles.order_by('-hits', '-latest_date')
+            # 최신순 정렬
             else:
-                articles = Article.objects.all().order_by('-created_at')
-            serializer = ArticleSerializer(articles, many=True)
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
-        
+                articles = articles.order_by('-latest_date')
+
+            paginator = CustomCursorPagination()
+            page = paginator.paginate_queryset(articles, request)
+            serializer = ArticleSerializer(page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+
     # 기사 작성
+
     @method_decorator(permission_classes([IsAuthenticated]))
     def post(self, request):
         category_id = request.data.get('category')
         category = get_object_or_404(Category, id=category_id)
-        
+
         serializer = ArticleSerializer(data=request.data)
-        
+
         if serializer.is_valid(raise_exception=True):
             serializer.save(author=request.user, category=category)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -64,23 +90,23 @@ class ArticleAPIView(APIView):
 
 class ArticleDetailAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def get_object(self, pk):
         return get_object_or_404(Article, pk=pk)
-    
+
     # 기사 상세페이지 조회
     def get(self, request, article_pk):
         article = self.get_object(article_pk)
         article.hits += 1
         article.save()
-        
+
         serializer = ArticleDetailSerializer(article)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     # 기사 추천, 비추천
     def post(self, request, article_pk):
         article = self.get_object(article_pk)
-        
+
         # 추천
         if request.data.get('evaluate') == 'recommendation':
             article.non_recommendation.remove(request.user)
@@ -101,51 +127,54 @@ class ArticleDetailAPIView(APIView):
                 article.non_recommendation.add(request.user)
                 article.save()
                 return Response({"detail": "이 기사를 비추천합니다."}, status=status.HTTP_200_OK)
-    
+
     # 기사 수정
     def put(self, request, article_pk):
         article = self.get_object(article_pk)
-        
+
         if article.author != request.user:
             return Response({"error": "작성자가 일치하지 않습니다."}, status=status.HTTP_403_FORBIDDEN)
-        
-        serializer = ArticleDetailSerializer(article, data=request.data, partial=True)
-        
+
+        serializer = ArticleDetailSerializer(
+            article, data=request.data, partial=True)
+
         if serializer.is_valid(raise_exception=True):
             serializer.save(updated_at=timezone.now())
             return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     # 기사 삭제
     def delete(self, request, article_pk):
         article = self.get_object(article_pk)
-        
+
         if article.author != request.user:
             return Response({"error": "작성자가 일치하지 않습니다."}, status=status.HTTP_403_FORBIDDEN)
-        
+
         article.delete()
         return Response({"detail": "게시글이 삭제되었습니다.."}, status=status.HTTP_204_NO_CONTENT)
 
 
 class CommentListView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def get_object(self, pk):
         return get_object_or_404(Article, pk=pk)
-    
+
     # 댓글 작성
     def post(self, request, article_pk):
         article = self.get_object(article_pk)
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save(author=request.user, article = article)
-            
+            serializer.save(author=request.user, article=article)
+
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CommentDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get_object(self, pk):
         return get_object_or_404(Comment, pk=pk)
-    
+
     # 댓글 추천, 비추천
     def post(self, request, comment_pk):
         comment = self.get_object(comment_pk)
@@ -186,4 +215,3 @@ class CommentDetailView(APIView):
         comment.delete()
         return Response({"message":"댓글을 성공적으로 삭제했습니다"})
     
-
