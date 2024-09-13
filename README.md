@@ -4,7 +4,7 @@
  - 
  - 
 ## API specification
-### /api/accounts
+### /api/accounts/
  - POST: 회원가입을 할 수 있습니다.
  - DELETE : 해당 유저의 비활성화를 진행 합니다.
 

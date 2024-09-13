@@ -1,5 +1,20 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
+import datetime
+
+
+class CustomUserManager(UserManager):
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+        
+        extra_fields.setdefault('birth', datetime.date.today())
+        return self._create_user(username, email, password, **extra_fields)
 
 
 class User(AbstractUser):
@@ -21,14 +36,8 @@ class User(AbstractUser):
     def delete(self, using=None, keep_parents=False):
         self.is_active = False
         self.save(using=using)
-        
-    # 슈퍼유저 만들때 User 오버라이드
-    @classmethod
-    def create_superuser(cls, username, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        # 생일 삭제
-        extra_fields.pop('birth', None)
-
-        return cls._create_user(username, email, password, **extra_fields)
+    
+    objects = CustomUserManager()
+    
+    def __str__(self):
+        return self.username
