@@ -18,7 +18,6 @@ class ArticleAPIView(APIView):
     # 모든 기사 조회
     def get(self, request):
         articles = Article.objects.all()
-        
         serializer = ArticleSerializer(articles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -97,14 +96,13 @@ class ArticleDetailAPIView(APIView):
         
         article.delete()
         return Response({"detail": "게시글이 삭제되었습니다.."}, status=status.HTTP_204_NO_CONTENT)
-    
 
 
 class CommentListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get_object(self, pk):
         return get_object_or_404(Article, pk=pk)
-    
-    permission_classes = [IsAuthenticated]
     
     # 댓글 작성
     def post(self, request, article_pk):
@@ -121,7 +119,7 @@ class CommentListView(APIView):
         comments = article.article_comments.all().order_by("-pk")
         serializers = CommentSerializer(comments, many=True)
         return Response(serializers.data)
-    
+
 
 class CommentDetailView(APIView):
     def get_object(self, pk):
@@ -140,7 +138,7 @@ class CommentDetailView(APIView):
         comment = self.get_object(comment_pk)
         serializer = CommentSerializer(instance = comment, data = request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer.save(updated_at=timezone.now())
             return Response(serializer.data)
         
     def post(self, request, comment_pk):
@@ -166,8 +164,3 @@ class CommentDetailView(APIView):
                 comment.save()
                 return Response({"detail": "이 댓글을 비추천합니다."}, status=status.HTTP_200_OK)
 
-    
-
-        
-    
-        
