@@ -4,14 +4,22 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class TimeStampeModel(models.Model):
+class Recommendable(models.Model):
+    recommendation = models.ManyToManyField(
+        User,
+        related_name='%(class)s_recommend',
+        )
+    non_recommendation = models.ManyToManyField(
+        User,
+        related_name='%(class)s_non_recommend',
+        )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         abstract = True
 
-class Article(TimeStampeModel):
+class Article(Recommendable):
     title = models.CharField(max_length=200)
     content = models.TextField()
     author = models.ForeignKey(
@@ -22,14 +30,6 @@ class Article(TimeStampeModel):
     image = models.ImageField(
         upload_to='images/',
         blank=True,
-        )
-    recommendation = models.ManyToManyField(
-        User,
-        related_name='recommend_articles',
-        )
-    non_recommendation = models.ManyToManyField(
-        User,
-        related_name='non_recommend_articles',
         )
     hits = models.PositiveIntegerField(default=0)
     category = models.ForeignKey(
@@ -49,17 +49,9 @@ class Category(models.Model):
         return self.name
 
 
-class Comments(TimeStampeModel):
+class Comments(Recommendable):
     author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="comments")
     content = models.TextField()
-    recommendation = models.ManyToManyField(
-        to=User,
-        related_name='recommend_comments',
-        )
-    non_recommendation = models.ManyToManyField(
-        to=User,
-        related_name='non_recommend_comments',
-        )
     article = models.ForeignKey(
         to=Article, 
         on_delete=models.CASCADE, 

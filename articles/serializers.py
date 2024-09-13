@@ -7,8 +7,6 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = Article
         fields = "__all__"
         read_only_fields = ("author", "recommendation", "non_recommendation")
-        
-
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -17,8 +15,8 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comments
         fields = "__all__"
         read_only_fields = ("author", "recommendation", "non_recommendation","article",)
-        
-        
+
+
 class ArticleDetailSerializer(ArticleSerializer):
     article_comments = CommentSerializer(many=True, read_only=True)
     
