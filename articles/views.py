@@ -12,15 +12,25 @@ from .serializers import (
     ArticleDetailSerializer,
     CommentSerializer
     )
+from .paginations import CustomCursorPagination
+from django.db.models import F, Max
+from django.db.models.functions import Coalesce
+
 
 
 class ArticleAPIView(APIView):
     # 모든 기사 조회
     def get(self, request):
-        articles = Article.objects.all()
-        
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        articles = Article.objects.annotate(
+            latest_date=Max(
+                Coalesce(F('updated_at'),('created_at')),
+                F('created_at')
+            )
+        ).order_by('-latest_date')
+        paginator = CustomCursorPagination()
+        paginated_articles = paginator.paginate_queryset(articles, request)
+        serializer = ArticleSerializer(paginated_articles, many=True)
+        return paginator.get_paginated_response(serializer.data)
         
     # 기사 작성
     @method_decorator(permission_classes([IsAuthenticated]))
