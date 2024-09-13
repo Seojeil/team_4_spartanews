@@ -140,34 +140,11 @@ class CommentListView(APIView):
             serializer.save(author=request.user, article = article)
             
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
-    # 해당 article의 모든 댓글 조회
-    def get(self, request, article_pk):
-        article = self.get_object(article_pk)
-        comments = article.article_comments.all().order_by("-pk")
-        serializers = CommentSerializer(comments, many=True)
-        return Response(serializers.data)
 
 
 class CommentDetailView(APIView):
     def get_object(self, pk):
         return get_object_or_404(Comment, pk=pk)
-    
-    # 댓글 삭제 기능
-    def delete(self, request, comment_pk):
-        comment = self.get_object(comment_pk)
-        if comment.author != request.user:
-            return Response({"message":"삭제할 권한이 없습니다"})
-        comment.delete()
-        return Response({"message":"댓글을 성공적으로 삭제했습니다"})
-    
-    # 댓글 수정
-    def put(self, request, comment_pk):
-        comment = self.get_object(comment_pk)
-        serializer = CommentSerializer(instance = comment, data = request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(updated_at=timezone.now())
-            return Response(serializer.data)
     
     # 댓글 추천, 비추천
     def post(self, request, comment_pk):
@@ -192,4 +169,21 @@ class CommentDetailView(APIView):
                 comment.non_recommendation.add(request.user)
                 comment.save()
                 return Response({"detail": "이 댓글을 비추천합니다."}, status=status.HTTP_200_OK)
+    
+        # 댓글 수정
+    def put(self, request, comment_pk):
+        comment = self.get_object(comment_pk)
+        serializer = CommentSerializer(instance = comment, data = request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(updated_at=timezone.now())
+            return Response(serializer.data)
+    
+        # 댓글 삭제 기능
+    def delete(self, request, comment_pk):
+        comment = self.get_object(comment_pk)
+        if comment.author != request.user:
+            return Response({"message":"삭제할 권한이 없습니다"})
+        comment.delete()
+        return Response({"message":"댓글을 성공적으로 삭제했습니다"})
+    
 
