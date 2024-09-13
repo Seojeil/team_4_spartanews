@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
-from .models import Article, Category, Comments
+from .models import Article, Category, Comment
 from .serializers import (
     ArticleSerializer,
     ArticleDetailSerializer,
@@ -25,12 +25,12 @@ class ArticleAPIView(APIView):
         if data_type == 'comments':
             # 추천순 정렬
             if sort_type == 'recommendation':
-                comments = Comments.objects.annotate(
+                comments = Comment.objects.annotate(
                     recommendation_count=Count('recommendation')-Count('non_recommendation')
                     ).order_by('-recommendation_count', '-created_at')
             # 작성순 정렬
             else:
-                comments = Comments.objects.all().order_by('-created_at')
+                comments = Comment.objects.all().order_by('-created_at')
             serializer = CommentSerializer(comments, many=True)
         # 기사조회/정렬
         else:
@@ -151,7 +151,7 @@ class CommentListView(APIView):
 
 class CommentDetailView(APIView):
     def get_object(self, pk):
-        return get_object_or_404(Comments, pk=pk)
+        return get_object_or_404(Comment, pk=pk)
     
     # 댓글 삭제 기능
     def delete(self, request, comment_pk):

@@ -49,7 +49,7 @@ class Category(models.Model):
         return self.name
 
 
-class Comments(Recommendable):
+class Comment(Recommendable):
     article = models.ForeignKey(
         to=Article, 
         on_delete=models.CASCADE, 
