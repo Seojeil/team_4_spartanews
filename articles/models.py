@@ -5,6 +5,12 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Recommendable(models.Model):
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='%(class)s'
+        )
+    content = models.TextField()
     recommendation = models.ManyToManyField(
         User,
         related_name='%(class)s_recommend',
@@ -21,12 +27,6 @@ class Recommendable(models.Model):
 
 class Article(Recommendable):
     title = models.CharField(max_length=200)
-    content = models.TextField()
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='articles'
-        )
     image = models.ImageField(
         upload_to='images/',
         blank=True,
@@ -50,8 +50,6 @@ class Category(models.Model):
 
 
 class Comments(Recommendable):
-    author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="comments")
-    content = models.TextField()
     article = models.ForeignKey(
         to=Article, 
         on_delete=models.CASCADE, 
