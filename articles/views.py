@@ -1,3 +1,4 @@
+import re
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -5,21 +6,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.db.models import Count, F, Max, Min
+from django.db.models import Count, F, Max
 from django.shortcuts import get_object_or_404
-from .models import Article, Category, Comment
+from .models import Article, Category, Comment, Tag
+from .paginations import CustomCursorPagination
 from .serializers import (
     ArticleSerializer,
     ArticleDetailSerializer,
     CommentSerializer
 )
-from .paginations import CustomCursorPagination
-
-from django.db.models.functions import Coalesce
 
 
 class ArticleAPIView(APIView):
-    # 모든 기사 조회
+    # 모든 기사 조회/필터링/검색
     def get(self, request,):
         data_type = request.query_params.get("data_type", "")  # articles/comments 
         sort_type = request.query_params.get("sort_type", "")  # recommendation/latest_date/hits(articles일때만)
@@ -57,11 +56,18 @@ class ArticleAPIView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
     # 기사 작성
-
     @method_decorator(permission_classes([IsAuthenticated]))
     def post(self, request):
         category_id = request.data.get('category')
         category = get_object_or_404(Category, id=category_id)
+        
+        tags = request.data.get('tags')
+        tag_instances = []
+        
+        if tags:
+            append_tags(tags, tag_instances)
+        
+        request.data['tags'] = tag_instances
 
         serializer = ArticleSerializer(data=request.data)
 
@@ -92,6 +98,7 @@ class ArticleDetailAPIView(APIView):
         # 추천
         if request.data.get('evaluate') == 'recommendation':
             article.non_recommendation.remove(request.user)
+
             if article.recommendation.filter(pk=request.user.pk).exists():
                 article.recommendation.remove(request.user)
                 return Response({"detail": "추천이 취소되었습니다."}, status=status.HTTP_200_OK)
@@ -102,6 +109,7 @@ class ArticleDetailAPIView(APIView):
         # 비추천
         else:
             article.recommendation.remove(request.user)
+
             if article.non_recommendation.filter(pk=request.user.pk).exists():
                 article.non_recommendation.remove(request.user)
                 return Response({"detail": "비추천이 취소되었습니다."}, status=status.HTTP_200_OK)
@@ -116,9 +124,18 @@ class ArticleDetailAPIView(APIView):
 
         if article.author != request.user:
             return Response({"error": "작성자가 일치하지 않습니다."}, status=status.HTTP_403_FORBIDDEN)
-
+        
+        article.tags.clear()
+        tags = request.data.get('tags')
+        tag_instances = []
+        
         serializer = ArticleDetailSerializer(
             article, data=request.data, partial=True)
+        
+        if tags:
+            append_tags(tags, tag_instances)
+        
+        request.data['tags'] = tag_instances
 
         if serializer.is_valid(raise_exception=True):
             serializer.save(updated_at=timezone.now())
@@ -145,6 +162,7 @@ class CommentListView(APIView):
     def post(self, request, article_pk):
         article = self.get_object(article_pk)
         serializer = CommentSerializer(data=request.data)
+
         if serializer.is_valid(raise_exception=True):
             serializer.save(author=request.user, article=article)
 
@@ -163,6 +181,7 @@ class CommentDetailView(APIView):
         # 추천
         if request.data.get('evaluate') == 'recommendation':
             comment.non_recommendation.remove(request.user)
+
             if comment.recommendation.filter(pk=request.user.pk).exists():
                 comment.recommendation.remove(request.user)
                 return Response({"detail": "추천이 취소되었습니다."}, status=status.HTTP_200_OK)
@@ -173,6 +192,7 @@ class CommentDetailView(APIView):
         # 비추천
         else:
             comment.recommendation.remove(request.user)
+
             if comment.non_recommendation.filter(pk=request.user.pk).exists():
                 comment.non_recommendation.remove(request.user)
                 return Response({"detail": "비추천이 취소되었습니다."}, status=status.HTTP_200_OK)
@@ -181,19 +201,35 @@ class CommentDetailView(APIView):
                 comment.save()
                 return Response({"detail": "이 댓글을 비추천합니다."}, status=status.HTTP_200_OK)
     
-        # 댓글 수정
+    # 댓글 수정
     def put(self, request, comment_pk):
         comment = self.get_object(comment_pk)
         serializer = CommentSerializer(instance = comment, data = request.data)
+
         if serializer.is_valid(raise_exception=True):
             serializer.save(updated_at=timezone.now())
             return Response(serializer.data)
     
-        # 댓글 삭제 기능
+    # 댓글 삭제 기능
     def delete(self, request, comment_pk):
         comment = self.get_object(comment_pk)
+
         if comment.author != request.user:
             return Response({"message":"삭제할 권한이 없습니다"})
+
         comment.delete()
         return Response({"message":"댓글을 성공적으로 삭제했습니다"})
+
+
+# 글작성/수정에 포함되는 태그 추가 함수
+def append_tags(tags, tag_instances):
+    if isinstance(tags, str):
+        tags = re.sub(r"[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ,]", "", tags)
+        tags = tags.split(',')
     
+    for tag in tags:
+        tag = tag.upper()
+        if tag:
+            tag_instance, created = Tag.objects.get_or_create(name=tag)
+            tag_instances.append(tag_instance.pk)
+    return tag_instances
