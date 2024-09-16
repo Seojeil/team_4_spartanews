@@ -21,7 +21,6 @@ class ArticleAPIView(APIView):
     # 모든 기사 조회/필터링/검색
     def get(self, request,):
         data_type = request.query_params.get("data_type", "")  # articles/comments 
-        sort_type = request.query_params.get("sort_type", "")  # recommendation/latest_date/hits(articles일때만)
         title = request.query_params.get('title', "").strip()
         content = request.query_params.get('context', "").strip()
         category = request.query_params.get('category', "").strip()
