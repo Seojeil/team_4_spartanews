@@ -13,6 +13,7 @@ from .serializers import (
     UserUpdateSerializers,
     UserChangePasswordSerailizers
 )
+from .utils import email_verification_code, send_verification_email
 
 
 class SignupView(APIView):
@@ -27,11 +28,19 @@ class SignupView(APIView):
         if not is_valid:
             return Response({"error": err_msg}, status=400)
 
-        user = User.objects.create_user(**request.data)
+        verification_code = email_verification_code()
+        
+        user_data = request.data.copy()
+        user_data['is_active'] = False
+        user_data['verification_code'] = verification_code
+        user = User.objects.create_user(**user_data)
+        
+        send_verification_email(user.email, verification_code)
 
         serializer = UserProfileSerializers(user)
-        return Response(serializer.data)
-
+        return Response({"message": "회원가입이 완료되었습니다. 이메일을 확인해주세요",
+                         "user": serializer.data}, status = status.HTTP_201_CREATED)
+        
     # 회원 비활성화
     def delete(self, request):
         user = request.user
@@ -43,6 +52,22 @@ class SignupView(APIView):
         else:
             return Response({"message": "비밀번호가 일치하지않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
 
+
+class VerifyEmailView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        verification_code = request.data.get('verification_code')
+        try:
+            user = User.objects.get(email=email, verification_code=verification_code)
+            if not user.is_active:
+                user.is_active = True
+                user.verification_code = None
+                user.save()
+                return Response({"message": "이메일 인증이 완료되었습니다."})
+            else:
+                return Response({"message":"이미 인증된 계정입니다."}, status = status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({"message":"잘못된 이메일 또는 인증 코드입니다."}, status = status.HTTP_400_BAD_REQUEST)
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]

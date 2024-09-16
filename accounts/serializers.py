@@ -8,6 +8,7 @@ class UserProfileSerializers(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
 class UserUpdateSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
