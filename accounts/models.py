@@ -32,6 +32,7 @@ class User(AbstractUser):
     followings = models.ManyToManyField(
         'self', symmetrical=False, related_name='followers')
     bio = models.TextField(null=True, blank=True)
+    verification_code = models.CharField(max_length=10, blank=True, null=True)
 
     def delete(self, using=None, keep_parents=False):
         self.is_active = False

@@ -116,6 +116,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# 개발 환경 콘솔 이메일 인증
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# 실제 SMTP를 사용한 이메일 인증
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'  # GMAIL SMTP
+# EMAIL_PORT = 587  # TLS 표준 포트
+# EMAIL_USE_TLS = True  # 암호화 연결
+# EMAIL_HOST_USER = 'min199485@gmail.com' # 개발자 이메일 주소
+# EMAIL_HOST_PASSWORD = 'password'  # gmail의 경우 일반 비밀번호 대신 '앱 비밀번호를 사용해야 할 수 있다.
+# gmail을 사용하는 경우, 보안 수준이 낮은 앱의 액세스를 허용 또는 앱 비밀번호를 생성해야 할 수 있다.
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [

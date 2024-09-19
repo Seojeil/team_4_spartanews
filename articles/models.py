@@ -35,20 +35,30 @@ class Article(CommonField):
     hits = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-    
-
     category = models.ForeignKey(
         'category',
         on_delete=models.CASCADE,
         related_name='articles'
         )
+    tags = models.ManyToManyField(
+        'tag',
+        related_name='products',
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return self.title
 
 
-# 카테고리
 class Category(models.Model):
+    name = models.CharField(max_length=30, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Tag(models.Model):
     name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
