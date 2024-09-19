@@ -8,6 +8,9 @@
  - POST: 회원가입을 할 수 있습니다.
  - DELETE : 해당 유저의 비활성화를 진행 합니다.
 
+### api/accounts/verifyemail/
+- POST: Signup을 시도하는 유저의 이메일과 인증 코드를 입력 확인 후 사용자를 활성화 시킬수 있습니다.
+
 ### api/accounts/`<int:account_id>`/
  - GET: 유저의 프로필 페이지의 정보를 조회 할 수 있습니다.
  - POST: 로그인한 사용자는 다른 사용자를 팔로우할 수 있습니다.
