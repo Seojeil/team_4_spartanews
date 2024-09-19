@@ -51,7 +51,6 @@ class Article(CommonField):
         return self.title
 
 
-# 카테고리
 class Category(models.Model):
     name = models.CharField(max_length=30, unique=True)
 
@@ -59,7 +58,6 @@ class Category(models.Model):
         return self.name
 
 
-# 태그
 class Tag(models.Model):
     name = models.CharField(max_length=30, unique=True)
 
